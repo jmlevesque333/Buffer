@@ -45,9 +45,8 @@ public:
 		return true;
 	}
 
-	void readBlock(int num)
+	void readBlock()
 	{
-		cout << "buffer # " << num << endl;
 		cout << "info: " << info << endl;
 		cout << "dirtyFlag: " << dirtyFlag << endl;
 		cout << "lockFlag: " << lockFlag << endl;
@@ -71,7 +70,7 @@ void aquireBuffer(int tableau[], buffer tab[], int num, int rand =-1)
 			if (tab[i].lockFlag == 0)
 				temp = i;
 	}
-	if (tab[temp + 1].accessCount < tab[temp].accessCount)
+	if (tab[temp + 1].accessCount <= tab[temp].accessCount)
 		temp++;
 	if(tab[temp].info != -1)
 		tab[temp].dirtyFlag = 1;
@@ -93,11 +92,29 @@ void releaseBuffer(int tableau[], buffer tab[], int num)
 		cout << "value not found";
 		return;
 	}
-	tableau[num] = tab[i].info;
-	tab[i].lockFlag = 0;
+	if (tab[i].dirtyFlag != 1)
+	{
+		cout << "not dirty";
+	}
+	else
+	{
+		tableau[num] = tab[i].info;
+		tab[i].lockFlag = 0;
+	}
+	
 }
 
-
+int findBlock(int tableau[], buffer tab[], int* num)
+{
+	int i = 0;
+	while (tab[i].ptr != num && i < 5)
+	{
+		i++;
+	}
+	if(tab[i].ptr == num)
+		return i;
+	else return -1;
+}
 
 void readFile(int tab[], int max)
 {
@@ -106,7 +123,7 @@ void readFile(int tab[], int max)
 		cout << "fichier simule:";
 		cout << "tab[" << i << "]: " << tab[i] << endl;
 	}
-	cout << endl;
+	cout << "---------------------------------------------" << endl;
 
 }
 
@@ -125,7 +142,8 @@ int main()
 	{
 		readFile(tab, 15);
 		for (int i = 0; i < 5; i++)
-			bassin[i].readBlock(i);
+			bassin[i].readBlock();
+		cout << "-------------------------------" << endl;
 		cout << "choissez un numero de 0 a 14; 100 pour sortir"<<endl;
 		cin >> input;
 		cout << endl << endl;
@@ -151,18 +169,18 @@ int main()
 			}
 			case 3:
 			{
-				bassin[input].readBlock(input);
+				bassin[findBlock(tab, bassin, getPointer(tab, input))].readBlock();
 				break;
 			}
 			case 4:
 			{
-				cout << "bloc # :";
-				cout << *bassin[input].ptr << endl;
+				
 				break;
 			}
 			case 5:
 			{
-				aquireBuffer(tab, bassin, input, 1);
+				bassin[findBlock(tab, bassin, getPointer(tab, input))].info = random();
+				bassin[findBlock(tab, bassin, getPointer(tab, input))].dirtyFlag = 1;
 				break;
 			}
 			default:
